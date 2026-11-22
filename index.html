@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DaF A1 – Verben mit Vokalwechsel (a → ä / au → äu)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+
+        h1, h2, .font-display {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Pulsierender Marker neben der Person/Aktion */
+        @keyframes pulseRing {
+            0% {
+                transform: translate(-50%, -50%) scale(0.95);
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.75);
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(1.06);
+                box-shadow: 0 0 0 16px rgba(225, 29, 72, 0);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.95);
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
+            }
+        }
+
+        .hotspot-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            animation: pulseRing 2s infinite cubic-bezier(0.66, 0, 0, 1);
+            transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1), top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 20;
+        }
+
+        /* Sanftes Schütteln bei falscher Antwort */
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        .animate-shake {
+            animation: shakeError 0.4s ease-in-out;
+        }
+
+        /* Einblend-Animation für Lösung & Übersetzung */
+        .reveal-enter {
+            animation: slideUpFade 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hervorhebung des Stammvokals im Infinitiv (a / au) */
+        .stem-base-highlight {
+            color: #1d4ed8;
+            background-color: #dbeafe;
+            padding: 0 4px;
+            border-radius: 5px;
+            font-weight: 800;
+            border-bottom: 2px solid #3b82f6;
+        }
+
+        /* Hervorhebung des Vokalwechsels im Präsens (ä / äu) */
+        .umlaut-highlight {
+            color: #e11d48;
+            background-color: #ffe4e6;
+            padding: 0 4px;
+            border-radius: 6px;
+            font-weight: 800;
+            border-bottom: 2px solid #f43f5e;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-rose-100 selection:text-rose-900">
+
+            <!-- Werkzeuge für den Unterricht: Bild 1 & Bild 2 laden, Neustart, Vollbild & Folienanzeige -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                <!-- Szenen-Schnellauswahl & Übersicht -->
+                <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+                    <button id="jumpScene1Btn" onclick="switchToSlidesView(0)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer bg-white text-slate-900 shadow-2xs">
+                        Bild 1 (1–7)
+                    </button>
+                    <button id="jumpScene2Btn" onclick="switchToSlidesView(7)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer text-slate-600 hover:text-slate-900">
+                        Bild 2 (8–13)
+                    </button>
+                    <button id="jumpSummaryBtn" onclick="switchToSummaryView()" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer text-slate-600 hover:text-slate-900 flex items-center gap-1">
+                        <i class="fa-solid fa-table-list text-rose-500"></i>
+                        <span>Übersicht</span>
+                    </button>
+                    <button id="jumpMimeBtn" onclick="switchToMimeView()" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer text-slate-600 hover:text-slate-900 flex items-center gap-1">
+                        <i class="fa-solid fa-masks-theater text-amber-500"></i>
+                        <span>Pantomime</span>
+                    </button>
+                </div>
+
+                <!-- Zurücksetzen / Nochmal spielen -->
+                <button id="resetBtn" onclick="resetPresentation()" title="Nochmal von vorne starten" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition cursor-pointer">
+                    <i class="fa-solid fa-rotate-right text-slate-600"></i>
+                    <span class="hidden md:inline">Nochmal spielen</span>
+                </button>
+
+                <!-- Vollbildmodus für das Whiteboard -->
+                <button id="fullscreenBtn" title="Vollbildmodus (Whiteboard)" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition cursor-pointer">
+                    <i class="fa-solid fa-expand text-sm"></i>
+                </button>
+
+                <!-- Folien-Zähler -->
+                <div class="bg-slate-900 text-white font-display font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow-2xs">
+                    <span id="slideCounter">1</span> / 13
+                </div>
+            </div>
+        </div>
+        <!-- Fortschrittsbalken -->
+        <div class="max-w-7xl mx-auto mt-2.5 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div id="progressBar" class="bg-rose-600 h-full transition-all duration-500 rounded-full" style="width: 7.69%;"></div>
+        </div>
+    </header>
+
+    <!-- HAUPTBEREICH DER FOLIE -->
+    <main id="slidesView" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-4 sm:py-5 flex flex-col gap-4 justify-center">
+        
+        <!-- OBERER BEREICH: ILLUSTRATION MIT NUMMER + ERGEBNISFENSTER -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            
+            <!-- Bildbereich (7 Spalten auf Desktop) -->
+            <div class="lg:col-span-7 w-full flex flex-col justify-center">
+                <div id="imageStage" class="relative w-full aspect-[3/2] bg-slate-200 rounded-2xl overflow-hidden shadow-lg border-2 border-slate-300/80 select-none group">
+                    <!-- Hauptbild -->
+                    <img id="sceneImage" 
+                         src="Mañana animada en la cocina.png" 
+                         alt="Illustration der Szene" 
+                         class="w-full h-full object-cover transition-opacity duration-300"
+                         onerror="handleImageError()">
+
+                    <!-- Hinweisbox, falls die lokale Bilddatei noch nicht im selben Ordner liegt -->
+                    <div id="imagePlaceholderOverlay" class="hidden absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 flex flex-col items-center justify-center p-6 text-center z-10">
+                        <div class="bg-white/95 backdrop-blur-xs p-6 rounded-2xl shadow-md border border-amber-200 max-w-md">
+                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                                <i class="fa-regular fa-images"></i>
+                            </div>
+                            <h3 class="font-display font-bold text-slate-800 text-lg mb-1">Bild nicht gefunden</h3>
+                            <p id="placeholderFileHint" class="text-sm text-slate-600">
+                                Bitte lege die Bilddatei <strong>„Mañana animada en la cocina.png“</strong> in denselben Ordner wie diese HTML-Datei.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- NUMMERN-MARKER -->
+                    <div id="hotspotMarker" 
+                         class="hotspot-marker w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-rose-600 text-white font-display font-extrabold text-lg sm:text-xl flex items-center justify-center border-[3px] border-white shadow-xl cursor-default"
+                         style="left: 26.5%; top: 14%;">
+                        1
+                    </div>
+
+                    <!-- Dezentes Szenen-Badge unten links -->
+                    <div class="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-xs text-white text-xs font-medium px-3 py-1.5 rounded-lg z-20 flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot text-rose-400"></i>
+                        <span>Bild <strong id="badgeSceneNum">1</strong> · Aktion <strong id="badgeActionNum" class="text-amber-300">1</strong> von <span id="badgeSceneTotal">7</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rechtes Panel: Aufgabenstellung + Infinitiv + Konjugierter Satz + Übersetzung (5 Spalten) -->
+            <div class="lg:col-span-5 flex flex-col justify-between bg-white rounded-2xl p-5 sm:p-6 shadow-md border border-slate-200">
+                
+                <!-- Aufgabenstellung -->
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-2.5">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-200/70">
+                            <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
+                            Nummer <span id="promptNum">1</span>
+                        </span>
+                        <span id="verbRuleTag" class="hidden text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                            <i class="fa-solid fa-arrow-right-arrow-left text-rose-500 mr-1"></i>
+                            <span id="verbRuleText">a → ä</span>
+                        </span>
+                    </div>
+
+                    <h2 class="text-lg sm:text-xl font-extrabold text-slate-800 leading-snug">
+                        Was macht die Person bei Nummer <span id="questionNum" class="text-rose-600 underline decoration-2 underline-offset-4">1</span>?
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Wähle unten den passenden Ausdruck im Infinitiv aus.
+                    </p>
+                </div>
+
+                <!-- LÖSUNGSBEREICH (Erscheint nach richtiger Auswahl) -->
+                <div id="resultContainer" class="my-4 flex-1 flex flex-col justify-center">
+                    <!-- Wartezustand -->
+                    <div id="waitingState" class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center bg-slate-50/70">
+                        <div class="text-slate-400 text-2xl mb-1.5">
+                            <i class="fa-regular fa-hand-pointer"></i>
+                        </div>
+                        <p class="text-sm font-medium text-slate-500">
+                            Klicke unten auf eine der <span id="waitingOptionCount">7</span> Aktionen.
+                        </p>
+                    </div>
+
+                    <!-- Gelöster Zustand (Infinitiv + Konjugierter Satz + Übersetzungs-Button) -->
+                    <div id="solvedState" class="hidden reveal-enter flex flex-col gap-3">
+                        <div class="bg-emerald-50/90 border-2 border-emerald-400 rounded-2xl p-4 sm:p-5 shadow-xs">
+                            <!-- Infinitiv-Zeile -->
+                            <div class="pb-2.5 mb-2.5 border-b border-emerald-200/80">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-0.5">
+                                    Infinitiv:
+                                </span>
+                                <p id="infinitivePhraseDisplay" class="font-display text-base sm:text-lg font-bold text-slate-700 leading-snug">
+                                    einen roten Pullover tragen
+                                </p>
+                            </div>
+
+                            <!-- Konjugierter Satz -->
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">
+                                        Präsens (3. Person Singular):
+                                    </span>
+                                    <p id="conjugatedSentence" class="font-display text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
+                                        Sie tr<span class="umlaut-highlight">ä</span>gt einen roten Pullover.
+                                    </p>
+                                </div>
+                                <button id="speakBtn" onclick="speakCurrentSentence()" title="Satz anhören" class="shrink-0 w-10 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-xs transition cursor-pointer">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Button für spanische Übersetzung -->
+                        <button id="showTranslationBtn" onclick="revealTranslation()" class="w-full py-2.5 px-4 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold text-sm border border-amber-300 transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-language text-amber-600 text-base"></i>
+                            <span>Spanische Übersetzung anzeigen</span>
+                        </button>
+
+                        <!-- Spanische Übersetzung (versteckt bis Klick) -->
+                        <div id="translationBox" class="hidden reveal-enter bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-2.5">
+                            <span class="text-xs font-bold uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md">ES</span>
+                            <p id="spanishTranslation" class="text-sm sm:text-base font-medium text-slate-700 italic">
+                                Ella lleva puesto un jersey rojo.
+                            </p>
+                        </div>
+
+                        <!-- Direktlink zur Übersichtstabelle auf der letzten Folie -->
+                        <button id="endSummaryCta" onclick="switchToSummaryView()" class="hidden w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-table-list"></i>
+                            <span>Zur Übersichtstabelle (alle Verben)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Navigationsleiste (Zurück / Fortschrittspunkte / Weiter) -->
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <button id="prevBtn" onclick="changeSlide(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:pointer-events-none text-slate-700 font-semibold text-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Zurück</span>
+                    </button>
+
+                    <!-- Fortschrittspunkte (Folien 1 bis 13) -->
+                    <div id="dotsContainer" class="flex items-center gap-1 flex-wrap justify-center"></div>
+
+                    <button id="nextBtn" onclick="changeSlide(1)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none text-white font-semibold text-sm transition flex items-center gap-2 cursor-pointer">
+                        <span>Weiter</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- UNTERER BEREICH: DIE AUSDRÜCKE IM INFINITIV ZUR AUSWAHL -->
+        <section class="bg-white rounded-2xl p-4 sm:p-5 shadow-md border border-slate-200">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check text-rose-500"></i>
+                    Wähle die passende Aktion für Nummer <span id="footerActionNum" class="text-rose-600 font-extrabold">1</span>:
+                </span>
+                <span id="feedbackToast" class="text-xs font-bold text-rose-600 opacity-0 transition-opacity duration-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    Fast! Schau dir die Nummer auf dem Bild noch einmal genau an.
+                </span>
+            </div>
+
+            <!-- Responsive Grid für die Infinitiv-Karten der aktuellen Szene -->
+            <div id="optionsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
+                <!-- Dynamisch per JavaScript erzeugt -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ZUSAMMENFASSUNG / ÜBERSICHTSTABELLE -->
+    <section id="summaryView" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 flex flex-col gap-6">
+        <div class="bg-white rounded-2xl p-5 sm:p-7 shadow-md border border-slate-200">
+            <div class="flex flex-wrap items-center justify-between gap-4 pb-5 mb-5 border-b border-slate-200">
+                <div>
+                    <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-200/70 mb-2">
+                        <i class="fa-solid fa-table-list"></i>
+                        Zusammenfassung · Niveau A1
+                    </span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">
+                        Verben mit Vokalwechsel (<span class="text-rose-600">a → ä</span> / <span class="text-rose-600">au → äu</span>) im Präsens
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Der Vokalwechsel passiert nur bei <strong>du</strong> und <strong>er / sie / es</strong>.
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                    <button onclick="switchToSlidesView(currentSlideIndex)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Zurück zu den Bildern</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 1. Tabelle: Spanisch (Infinitiv) | Deutsch (Infinitiv) | Beispielsatz -->
+            <h3 class="font-display font-bold text-slate-800 text-base sm:text-lg mb-3">
+                1. Wortschatz und Beispielsätze
+            </h3>
+            <div class="overflow-x-auto rounded-xl border border-slate-200 mb-8">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-900 text-white text-xs sm:text-sm uppercase tracking-wider">
+                            <th class="py-3.5 px-4 sm:px-6 font-bold w-1/4">Spanisch (Infinitiv)</th>
+                            <th class="py-3.5 px-4 sm:px-6 font-bold w-1/4">Deutsch (Infinitiv)</th>
+                            <th class="py-3.5 px-4 sm:px-6 font-bold w-2/4">Beispielsatz (Präsens)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTableBody" class="divide-y divide-slate-200 text-sm sm:text-base">
+                        <!-- Dynamisch per JavaScript erzeugt -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 2. Tabelle: Konjugation im Präsens -->
+            <h3 class="font-display font-bold text-slate-800 text-base sm:text-lg mb-3">
+                2. Konjugation im Präsens (Pronomen oben → unten, Verben links → rechts)
+            </h3>
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+                <table class="w-full text-left border-collapse">
+                    <thead id="conjugationTableHead">
+                        <!-- Dynamisch per JavaScript erzeugt -->
+                    </thead>
+                    <tbody id="conjugationTableBody" class="divide-y divide-slate-200 text-xs sm:text-sm">
+                        <!-- Dynamisch per JavaScript erzeugt -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PANTOMIME / PARTNERARBEIT (KLASSENZIMMER-OBJEKTE) -->
+    <section id="mimeView" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 flex flex-col gap-6">
+        <div class="bg-white rounded-2xl p-5 sm:p-7 shadow-md border border-slate-200">
+            <div class="flex flex-wrap items-center justify-between gap-4 pb-5 mb-6 border-b border-slate-200">
+                <div>
+                    <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 mb-2">
+                        <i class="fa-solid fa-masks-theater"></i>
+                        Partnerarbeit · Pantomime im Klassenzimmer
+                    </span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">
+                        Pantomime &amp; Nachmachen (am Platz)
+                    </h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        <strong>Spielregeln (zu zweit, am Platz):</strong> Person A zieht heimlich eine Karte und spielt die Aktion ohne Worte vor. Person B macht die Bewegung nach und sagt den Satz mit <strong>du</strong> (z. B. <em>„Du wäschst dir das Gesicht!“</em>).
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-2.5">
+                    <button onclick="drawRandomMimeCard()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-xs transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-shuffle"></i>
+                        <span>Zufällige Karte</span>
+                    </button>
+                    <button onclick="switchToSlidesView(currentSlideIndex)" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Zurück zu den Bildern</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hervorgehobene Zufallskarte (sehr groß lesbar) -->
+            <div id="spotlightMimeBox" class="hidden mb-6 bg-gradient-to-r from-amber-50 to-rose-50 border-2 border-amber-400 rounded-2xl p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-4 reveal-enter shadow-sm">
+                <div>
+                    <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-700 block mb-1.5">
+                        Aktuelle Pantomime-Karte #<span id="spotlightMimeNum">1</span>
+                    </span>
+                    <p id="spotlightMimeSentence" class="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
+                        Du trägst ein schwarzes Kleid.
+                    </p>
+                    <p id="spotlightMimeHint" class="text-sm sm:text-base text-slate-600 mt-2 italic">
+                        Llevas puesto un vestido negro.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button id="spotlightSpeakBtn" onclick="speakSpotlightMime()" class="px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <span>Hören</span>
+                    </button>
+                    <button onclick="document.getElementById('spotlightMimeBox').classList.add('hidden')" class="p-3 rounded-xl bg-white hover:bg-slate-100 text-slate-500 border border-slate-200 cursor-pointer" title="Schließen">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grid mit 12 Pantomime-Karten (einfache Sätze mit „du“, am Platz) -->
+            <div id="mimeCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                <!-- Dynamisch per JavaScript erzeugt -->
+            </div>
+        </div>
+    </section>
+
+    <script>
+        /**
+         * DATEN DER 13 FOLIEN (Bild 1: 1–7, Bild 2: 8–13)
+         */
+        const SLIDES_DATA = [
+            // --- BILD 1: Mañana animada en la cocina (7 Aktionen) ---
+            {
+                globalId: 1,
+                scene: 1,
+                sceneNum: 1,
+                x: 26.5,
+                y: 14,
+                spanishInfinitive: "llevar puesto un jersey rojo",
+                infinitive: "einen roten Pullover tragen",
+                infinitiveHTML: 'einen roten Pullover tr<span class="stem-base-highlight">a</span>gen',
+                conjugatedPlain: "Sie trägt einen roten Pullover.",
+                conjugatedHTML: 'Sie tr<span class="umlaut-highlight">ä</span>gt einen roten Pullover.',
+                translation: "Ella lleva puesto un jersey rojo.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 2,
+                scene: 1,
+                sceneNum: 2,
+                x: 18,
+                y: 66,
+                spanishInfinitive: "dormir en la mesa",
+                infinitive: "am Tisch schlafen",
+                infinitiveHTML: 'am Tisch schl<span class="stem-base-highlight">a</span>fen',
+                conjugatedPlain: "Er schläft am Tisch.",
+                conjugatedHTML: 'Er schl<span class="umlaut-highlight">ä</span>ft am Tisch.',
+                translation: "Él duerme en la mesa.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 3,
+                scene: 1,
+                sceneNum: 3,
+                x: 52,
+                y: 41.5,
+                spanishInfinitive: "lavarse las manos",
+                infinitive: "sich die Hände waschen",
+                infinitiveHTML: 'sich die Hände w<span class="stem-base-highlight">a</span>schen',
+                conjugatedPlain: "Er wäscht sich die Hände.",
+                conjugatedHTML: 'Er w<span class="umlaut-highlight">ä</span>scht sich die Hände.',
+                translation: "Él se lava las manos.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 4,
+                scene: 1,
+                sceneNum: 4,
+                x: 86,
+                y: 53.5,
+                spanishInfinitive: "hornear un pastel de manzana",
+                infinitive: "einen Apfelkuchen backen",
+                infinitiveHTML: 'einen Apfelkuchen b<span class="stem-base-highlight">a</span>cken',
+                conjugatedPlain: "Sie bäckt einen Apfelkuchen.",
+                conjugatedHTML: 'Sie b<span class="umlaut-highlight">ä</span>ckt einen Apfelkuchen.',
+                translation: "Ella hornea un pastel de manzana.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 5,
+                scene: 1,
+                sceneNum: 5,
+                x: 60.5,
+                y: 15,
+                spanishInfinitive: "conducir un coche / ir en coche",
+                infinitive: "Auto fahren",
+                infinitiveHTML: 'Auto f<span class="stem-base-highlight">a</span>hren',
+                conjugatedPlain: "Er fährt Auto.",
+                conjugatedHTML: 'Er f<span class="umlaut-highlight">ä</span>hrt Auto.',
+                translation: "Él conduce un coche / va en coche.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 6,
+                scene: 1,
+                sceneNum: 6,
+                x: 79.5,
+                y: 14.5,
+                spanishInfinitive: "montar en bicicleta / ir en bici",
+                infinitive: "Fahrrad fahren",
+                infinitiveHTML: 'Fahrrad f<span class="stem-base-highlight">a</span>hren',
+                conjugatedPlain: "Er fährt Fahrrad.",
+                conjugatedHTML: 'Er f<span class="umlaut-highlight">ä</span>hrt Fahrrad.',
+                translation: "Él monta en bicicleta / va en bici.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 7,
+                scene: 1,
+                sceneNum: 7,
+                x: 91,
+                y: 23,
+                spanishInfinitive: "caminar / ir por la calle",
+                infinitive: "auf der Straße laufen",
+                infinitiveHTML: 'auf der Straße l<span class="stem-base-highlight">au</span>fen',
+                conjugatedPlain: "Sie läuft auf der Straße.",
+                conjugatedHTML: 'Sie l<span class="umlaut-highlight">äu</span>ft auf der Straße.',
+                translation: "Ella camina / va por la calle.",
+                rule: "au → äu"
+            },
+
+            // --- BILD 2: Mudanza familiar y perro curioso (6 Aktionen) ---
+            {
+                globalId: 8,
+                scene: 2,
+                sceneNum: 1,
+                x: 19,
+                y: 10,
+                spanishInfinitive: "cargar cajas en el camión",
+                infinitive: "Kartons in den Lkw laden",
+                infinitiveHTML: 'Kartons in den Lkw l<span class="stem-base-highlight">a</span>den',
+                conjugatedPlain: "Er lädt Kartons in den Lkw.",
+                conjugatedHTML: 'Er l<span class="umlaut-highlight">ä</span>dt Kartons in den Lkw.',
+                translation: "Él carga cajas en el camión.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 9,
+                scene: 2,
+                sceneNum: 2,
+                x: 19.5,
+                y: 78,
+                spanishInfinitive: "caer al suelo",
+                infinitive: "auf den Boden fallen",
+                infinitiveHTML: 'auf den Boden f<span class="stem-base-highlight">a</span>llen',
+                conjugatedPlain: "Der Karton fällt auf den Boden.",
+                conjugatedHTML: 'Der Karton f<span class="umlaut-highlight">ä</span>llt auf den Boden.',
+                translation: "La caja cae al suelo.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 10,
+                scene: 2,
+                sceneNum: 3,
+                x: 44.5,
+                y: 33,
+                spanishInfinitive: "sujetar la puerta",
+                infinitive: "die Tür halten",
+                infinitiveHTML: 'die Tür h<span class="stem-base-highlight">a</span>lten',
+                conjugatedPlain: "Sie hält die Tür.",
+                conjugatedHTML: 'Sie h<span class="umlaut-highlight">ä</span>lt die Tür.',
+                translation: "Ella sujeta la puerta.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 11,
+                scene: 2,
+                sceneNum: 4,
+                x: 51,
+                y: 66.5,
+                spanishInfinitive: "dejar la caja en el suelo",
+                infinitive: "den Karton auf dem Boden lassen",
+                infinitiveHTML: 'den Karton auf dem Boden l<span class="stem-base-highlight">a</span>ssen',
+                conjugatedPlain: "Sie lässt den Karton auf dem Boden.",
+                conjugatedHTML: 'Sie l<span class="umlaut-highlight">ä</span>sst den Karton auf dem Boden.',
+                translation: "Ella deja la caja en el suelo.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 12,
+                scene: 2,
+                sceneNum: 5,
+                x: 80,
+                y: 50,
+                spanishInfinitive: "crecer en el jardín",
+                infinitive: "im Garten wachsen",
+                infinitiveHTML: 'im Garten w<span class="stem-base-highlight">a</span>chsen',
+                conjugatedPlain: "Die Pflanze wächst im Garten.",
+                conjugatedHTML: 'Die Pflanze w<span class="umlaut-highlight">ä</span>chst im Garten.',
+                translation: "La planta crece en el jardín.",
+                rule: "a → ä"
+            },
+            {
+                globalId: 13,
+                scene: 2,
+                sceneNum: 6,
+                x: 69.5,
+                y: 84,
+                spanishInfinitive: "atrapar un pájaro",
+                infinitive: "einen Vogel fangen",
+                infinitiveHTML: 'einen Vogel f<span class="stem-base-highlight">a</span>ngen',
+                conjugatedPlain: "Der Hund fängt einen Vogel.",
+                conjugatedHTML: 'Der Hund f<span class="umlaut-highlight">ä</span>ngt einen Vogel.',
+                translation: "El perro atrapa un pájaro.",
+                rule: "a → ä"
+            }
+        ];
+
+        /**
+         * SZENEN-KONFIGURATION (Bild 1 & Bild 2)
+         */
+        const SCENES_CONFIG = {
+            1: {
+                defaultSrc: "Mañana animada en la cocina.png",
+                optionOrder: [3, 0, 5, 1, 6, 2, 4]
+            },
+            2: {
+                defaultSrc: "Mudanza familiar y perro curioso.png",
+                optionOrder: [9, 7, 11, 8, 12, 10]
+            }
+        };
+
+        /**
+         * KONJUGATIONSTABELLE DER 12 VERBEN IM PRÄSENS
+         */
+        const CONJUGATION_DATA = [
+            { inf: 'tr<span class="stem-base-highlight">a</span>gen', ich: 'trage', du: 'tr<span class="umlaut-highlight">ä</span>gst', er: 'tr<span class="umlaut-highlight">ä</span>gt', wir: 'tragen', ihr: 'tragt', sie: 'tragen' },
+            { inf: 'schl<span class="stem-base-highlight">a</span>fen', ich: 'schlafe', du: 'schl<span class="umlaut-highlight">ä</span>fst', er: 'schl<span class="umlaut-highlight">ä</span>ft', wir: 'schlafen', ihr: 'schlaft', sie: 'schlafen' },
+            { inf: 'w<span class="stem-base-highlight">a</span>schen', ich: 'wasche', du: 'w<span class="umlaut-highlight">ä</span>schst', er: 'w<span class="umlaut-highlight">ä</span>scht', wir: 'waschen', ihr: 'wascht', sie: 'waschen' },
+            { inf: 'b<span class="stem-base-highlight">a</span>cken', ich: 'backe', du: 'b<span class="umlaut-highlight">ä</span>ckst', er: 'b<span class="umlaut-highlight">ä</span>ckt', wir: 'backen', ihr: 'backt', sie: 'backen' },
+            { inf: 'f<span class="stem-base-highlight">a</span>hren', ich: 'fahre', du: 'f<span class="umlaut-highlight">ä</span>hrst', er: 'f<span class="umlaut-highlight">ä</span>hrt', wir: 'fahren', ihr: 'fahrt', sie: 'fahren' },
+            { inf: 'l<span class="stem-base-highlight">au</span>fen', ich: 'laufe', du: 'l<span class="umlaut-highlight">äu</span>fst', er: 'l<span class="umlaut-highlight">äu</span>ft', wir: 'laufen', ihr: 'lauft', sie: 'laufen' },
+            { inf: 'l<span class="stem-base-highlight">a</span>den', ich: 'lade', du: 'l<span class="umlaut-highlight">ä</span>dst', er: 'l<span class="umlaut-highlight">ä</span>dt', wir: 'laden', ihr: 'ladet', sie: 'laden' },
+            { inf: 'f<span class="stem-base-highlight">a</span>llen', ich: 'falle', du: 'f<span class="umlaut-highlight">ä</span>llst', er: 'f<span class="umlaut-highlight">ä</span>llt', wir: 'fallen', ihr: 'fallt', sie: 'fallen' },
+            { inf: 'h<span class="stem-base-highlight">a</span>lten', ich: 'halte', du: 'h<span class="umlaut-highlight">ä</span>ltst', er: 'h<span class="umlaut-highlight">ä</span>lt', wir: 'halten', ihr: 'haltet', sie: 'halten' },
+            { inf: 'l<span class="stem-base-highlight">a</span>ssen', ich: 'lasse', du: 'l<span class="umlaut-highlight">ä</span>sst', er: 'l<span class="umlaut-highlight">ä</span>sst', wir: 'lassen', ihr: 'lasst', sie: 'lassen' },
+            { inf: 'w<span class="stem-base-highlight">a</span>chsen', ich: 'wachse', du: 'w<span class="umlaut-highlight">ä</span>chst', er: 'w<span class="umlaut-highlight">ä</span>chst', wir: 'wachsen', ihr: 'wachst', sie: 'wachsen' },
+            { inf: 'f<span class="stem-base-highlight">a</span>ngen', ich: 'fange', du: 'f<span class="umlaut-highlight">ä</span>ngst', er: 'f<span class="umlaut-highlight">ä</span>ngt', wir: 'fangen', ihr: 'fangt', sie: 'fangen' }
+        ];
+
+        /**
+         * PANTOMIME-SÄTZE FÜR PARTNERARBEIT (EINFACHE SÄTZE MIT „DU“, AM PLATZ)
+         */
+        const MIME_CARDS_DATA = [
+            {
+                verb: "tragen",
+                plain: "Du trägst ein schwarzes Kleid.",
+                html: 'Du tr<span class="umlaut-highlight">ä</span>gst ein schwarzes Kleid.',
+                es: "Llevas puesto un vestido negro."
+            },
+            {
+                verb: "waschen",
+                plain: "Du wäschst dir das Gesicht.",
+                html: 'Du w<span class="umlaut-highlight">ä</span>schst dir das Gesicht.',
+                es: "Te lavas la cara."
+            },
+            {
+                verb: "schlafen",
+                plain: "Du schläfst auf dem Tisch.",
+                html: 'Du schl<span class="umlaut-highlight">ä</span>fst auf dem Tisch.',
+                es: "Duermes sobre la mesa."
+            },
+            {
+                verb: "fahren",
+                plain: "Du fährst Auto.",
+                html: 'Du f<span class="umlaut-highlight">ä</span>hrst Auto.',
+                es: "Conduces un coche."
+            },
+            {
+                verb: "fangen",
+                plain: "Du fängst einen Ball.",
+                html: 'Du f<span class="umlaut-highlight">ä</span>ngst einen Ball.',
+                es: "Atrapas una pelota."
+            },
+            {
+                verb: "laufen",
+                plain: "Du läufst auf der Stelle.",
+                html: 'Du l<span class="umlaut-highlight">äu</span>fst auf der Stelle.',
+                es: "Corres en el sitio."
+            },
+            {
+                verb: "halten",
+                plain: "Du hältst ein Buch.",
+                html: 'Du h<span class="umlaut-highlight">ä</span>ltst ein Buch.',
+                es: "Sostienes un libro."
+            },
+            {
+                verb: "fallen",
+                plain: "Du fällst vom Stuhl.",
+                html: 'Du f<span class="umlaut-highlight">ä</span>llst vom Stuhl.',
+                es: "Te caes de la silla."
+            },
+            {
+                verb: "lassen",
+                plain: "Du lässt den Stift auf den Tisch.",
+                html: 'Du l<span class="umlaut-highlight">ä</span>sst den Stift auf den Tisch.',
+                es: "Dejas el bolígrafo en la mesa."
+            },
+            {
+                verb: "backen",
+                plain: "Du bäckst einen Kuchen.",
+                html: 'Du b<span class="umlaut-highlight">ä</span>ckst einen Kuchen.',
+                es: "Horneas un pastel."
+            },
+            {
+                verb: "laden",
+                plain: "Du lädst Bücher in die Tasche.",
+                html: 'Du l<span class="umlaut-highlight">ä</span>dst Bücher in die Tasche.',
+                es: "Metes/cargas libros en la mochila."
+            },
+            {
+                verb: "wachsen",
+                plain: "Du wächst wie ein Baum.",
+                html: 'Du w<span class="umlaut-highlight">ä</span>chst wie ein Baum.',
+                es: "Creces como un árbol."
+            }
+        ];
+
+        // Zustand der Präsentation
+        let currentSlideIndex = 0;
+        let currentRenderedScene = null;
+        let activeView = "slides"; // "slides" | "summary" | "mime"
+        let currentSpotlightMimePlain = "";
+        let mimeRevealedStates = MIME_CARDS_DATA.map(() => true);
+        let slideStates = SLIDES_DATA.map(() => ({
+            solved: false,
+            translationShown: false
+        }));
+
+        // DOM-Referenzen
+        const sceneImage = document.getElementById("sceneImage");
+        const imagePlaceholderOverlay = document.getElementById("imagePlaceholderOverlay");
+        const hotspotMarker = document.getElementById("hotspotMarker");
+        const optionsGrid = document.getElementById("optionsGrid");
+        const waitingState = document.getElementById("waitingState");
+        const solvedState = document.getElementById("solvedState");
+        const infinitivePhraseDisplay = document.getElementById("infinitivePhraseDisplay");
+        const conjugatedSentence = document.getElementById("conjugatedSentence");
+        const showTranslationBtn = document.getElementById("showTranslationBtn");
+        const translationBox = document.getElementById("translationBox");
+        const spanishTranslation = document.getElementById("spanishTranslation");
+        const feedbackToast = document.getElementById("feedbackToast");
+
+        // Initialisierung
+        window.addEventListener("DOMContentLoaded", () => {
+            renderSummaryTable();
+            renderConjugationTable();
+            renderMimeCards();
+            renderSlide();
+        });
+
+        // Ansicht wechseln: Folien vs. Übersichtstabelle vs. Pantomime
+        function switchToSlidesView(targetIndex) {
+            activeView = "slides";
+            document.getElementById("slidesView").classList.remove("hidden");
+            document.getElementById("summaryView").classList.add("hidden");
+            document.getElementById("mimeView").classList.add("hidden");
+            if (typeof targetIndex === "number") {
+                currentSlideIndex = targetIndex;
+            }
+            renderSlide();
+        }
+
+        function switchToSummaryView() {
+            activeView = "summary";
+            document.getElementById("slidesView").classList.add("hidden");
+            document.getElementById("summaryView").classList.remove("hidden");
+            document.getElementById("mimeView").classList.add("hidden");
+            updateHeaderTabs();
+        }
+
+        function switchToMimeView() {
+            activeView = "mime";
+            document.getElementById("slidesView").classList.add("hidden");
+            document.getElementById("summaryView").classList.add("hidden");
+            document.getElementById("mimeView").classList.remove("hidden");
+            updateHeaderTabs();
+        }
+
+        function updateHeaderTabs() {
+            const btn1 = document.getElementById("jumpScene1Btn");
+            const btn2 = document.getElementById("jumpScene2Btn");
+            const btnSum = document.getElementById("jumpSummaryBtn");
+            const btnMime = document.getElementById("jumpMimeBtn");
+            const activeClass = "px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer bg-white text-slate-900 shadow-2xs";
+            const inactiveClass = "px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer text-slate-600 hover:text-slate-900";
+
+            btn1.className = inactiveClass;
+            btn2.className = inactiveClass;
+            btnSum.className = inactiveClass + " flex items-center gap-1";
+            btnMime.className = inactiveClass + " flex items-center gap-1";
+
+            if (activeView === "summary") {
+                btnSum.className = activeClass + " flex items-center gap-1";
+            } else if (activeView === "mime") {
+                btnMime.className = activeClass + " flex items-center gap-1";
+            } else if (SLIDES_DATA[currentSlideIndex].scene === 1) {
+                btn1.className = activeClass;
+            } else {
+                btn2.className = activeClass;
+            }
+        }
+
+        // Übersichtstabelle (Spanisch Infinitiv | Deutsch Infinitiv | Beispielsatz) rendern
+        function renderSummaryTable() {
+            const tbody = document.getElementById("summaryTableBody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            SLIDES_DATA.forEach((item, index) => {
+                const tr = document.createElement("tr");
+                tr.className = index % 2 === 0 ? "bg-white hover:bg-slate-50 transition" : "bg-slate-50/60 hover:bg-slate-100/70 transition";
+                const escapedPlain = item.conjugatedPlain.replace(/'/g, "\\'");
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 sm:px-6 text-slate-600 font-medium italic">
+                        ${item.spanishInfinitive}
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 font-display font-bold text-slate-800">
+                        ${item.infinitiveHTML}
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="font-display font-extrabold text-slate-900">
+                                    ${item.conjugatedHTML}
+                                </p>
+                                <p class="text-xs text-slate-500 mt-0.5 italic">
+                                    ${item.translation}
+                                </p>
+                            </div>
+                            <button type="button" onclick="speakText('${escapedPlain}')" title="Satz anhören" class="shrink-0 w-9 h-9 rounded-xl bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 flex items-center justify-center transition cursor-pointer">
+                                <i class="fa-solid fa-volume-high text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Konjugationstabelle rendern (Pronomen von oben nach unten, Verben von links nach rechts, kleingeschrieben)
+        function renderConjugationTable() {
+            const thead = document.getElementById("conjugationTableHead");
+            const tbody = document.getElementById("conjugationTableBody");
+
+            // Kopfzeile: Pronomen + die 12 Infinitive von links nach rechts (ohne uppercase!)
+            let headHTML = '<tr class="bg-slate-900 text-white text-xs sm:text-sm tracking-normal">';
+            headHTML += '<th class="py-3.5 px-3.5 font-bold sticky left-0 bg-slate-900 z-10 border-r border-slate-700">pronomen</th>';
+            CONJUGATION_DATA.forEach((v) => {
+                headHTML += `<th class="py-3.5 px-3 font-display font-bold whitespace-nowrap">${v.inf}</th>`;
+            });
+            headHTML += '</tr>';
+            thead.innerHTML = headHTML;
+
+            // Zeilen: ich, du, er / sie / es, wir, ihr, sie / Sie von oben nach unten
+            const persons = [
+                { key: "ich", label: "ich", highlight: false },
+                { key: "du", label: "du", highlight: true },
+                { key: "er", label: "er / sie / es", highlight: true },
+                { key: "wir", label: "wir", highlight: false },
+                { key: "ihr", label: "ihr", highlight: false },
+                { key: "sie", label: "sie / Sie", highlight: false }
+            ];
+
+            tbody.innerHTML = "";
+            persons.forEach((p) => {
+                const tr = document.createElement("tr");
+                tr.className = p.highlight
+                    ? "bg-rose-50/70 hover:bg-rose-100/60 transition"
+                    : "bg-white hover:bg-slate-50 transition";
+
+                let rowHTML = `<td class="py-3 px-3.5 font-bold whitespace-nowrap sticky left-0 z-10 border-r border-slate-200 ${p.highlight ? 'bg-rose-100 text-rose-900' : 'bg-slate-100 text-slate-800'}">${p.label}</td>`;
+                CONJUGATION_DATA.forEach((v) => {
+                    rowHTML += `<td class="py-3 px-3 whitespace-nowrap ${p.highlight ? 'font-bold text-slate-900' : 'text-slate-700'}">${v[p.key]}</td>`;
+                });
+                tr.innerHTML = rowHTML;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Pantomime-Karten für Partnerarbeit rendern
+        function renderMimeCards() {
+            const grid = document.getElementById("mimeCardsGrid");
+            grid.innerHTML = "";
+
+            MIME_CARDS_DATA.forEach((card, idx) => {
+                const isRevealed = mimeRevealedStates[idx];
+                const el = document.createElement("div");
+                el.onclick = () => selectMimeCard(idx);
+                el.className = "rounded-2xl border-2 border-slate-200 bg-slate-50/70 hover:border-amber-400 hover:bg-white p-4 transition flex flex-col justify-between gap-3 shadow-2xs cursor-pointer";
+                const escapedPlain = card.plain.replace(/'/g, "\\'");
+
+                el.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg">
+                            #${idx + 1} · ${card.verb}
+                        </span>
+                        <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+                            <button type="button" onclick="toggleMimeCardVisibility(${idx})" title="Karte verdecken / zeigen" class="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center transition cursor-pointer">
+                                <i class="fa-regular ${isRevealed ? 'fa-eye-slash' : 'fa-eye'} text-xs"></i>
+                            </button>
+                            <button type="button" onclick="speakText('${escapedPlain}')" title="Satz anhören" class="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition cursor-pointer">
+                                <i class="fa-solid fa-volume-high text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="${isRevealed ? '' : 'blur-sm select-none'} transition-all duration-200">
+                        <p class="font-display font-extrabold text-slate-900 text-base sm:text-lg leading-snug">
+                            ${card.html}
+                        </p>
+                        <p class="text-xs text-slate-500 italic mt-1">
+                            ${card.es}
+                        </p>
+                    </div>
+                `;
+                grid.appendChild(el);
+            });
+        }
+
+        function selectMimeCard(idx) {
+            const card = MIME_CARDS_DATA[idx];
+            currentSpotlightMimePlain = card.plain;
+
+            document.getElementById("spotlightMimeNum").textContent = idx + 1;
+            document.getElementById("spotlightMimeSentence").innerHTML = card.html;
+            document.getElementById("spotlightMimeHint").textContent = card.es;
+            const box = document.getElementById("spotlightMimeBox");
+            box.classList.remove("hidden");
+            box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        function toggleMimeCardVisibility(idx) {
+            mimeRevealedStates[idx] = !mimeRevealedStates[idx];
+            renderMimeCards();
+        }
+
+        function drawRandomMimeCard() {
+            const randomIdx = Math.floor(Math.random() * MIME_CARDS_DATA.length);
+            selectMimeCard(randomIdx);
+        }
+
+        function speakSpotlightMime() {
+            if (currentSpotlightMimePlain) {
+                speakText(currentSpotlightMimePlain);
+            }
+        }
+
+        // Fallback, falls die lokale Bilddatei der aktuellen Szene noch nicht im selben Ordner liegt
+        function handleImageError() {
+            const currentScene = SLIDES_DATA[currentSlideIndex].scene;
+            const cfg = SCENES_CONFIG[currentScene];
+            document.getElementById("placeholderFileHint").innerHTML =
+                `Bitte lege die Bilddatei <strong>„${cfg.defaultSrc}“</strong> in denselben Ordner wie diese HTML-Datei.`;
+            imagePlaceholderOverlay.classList.remove("hidden");
+        }
+
+        // Auswahlkarten für die jeweilige Szene (7 bei Bild 1, 6 bei Bild 2) erstellen
+        function renderOptionButtonsForScene(sceneId) {
+            const order = SCENES_CONFIG[sceneId].optionOrder;
+            optionsGrid.innerHTML = "";
+            optionsGrid.className = sceneId === 1
+                ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5"
+                : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5";
+
+            order.forEach((slideIdx) => {
+                const item = SLIDES_DATA[slideIdx];
+                const btn = document.createElement("button");
+                btn.id = `option-btn-${slideIdx}`;
+                btn.type = "button";
+                btn.className = "option-card text-left p-3.5 rounded-xl border-2 border-slate-200 bg-slate-50/60 hover:bg-white hover:border-rose-400 hover:shadow-xs transition-all duration-150 flex flex-col justify-between min-h-[72px] cursor-pointer group";
+                btn.innerHTML = `
+                    <span class="text-sm sm:text-[15px] font-bold text-slate-800 group-hover:text-rose-700 leading-snug">
+                        ${item.infinitive}
+                    </span>
+                    <span class="text-[11px] font-medium text-slate-400 mt-1.5 group-hover:text-slate-500">
+                        Infinitiv
+                    </span>
+                `;
+                btn.addEventListener("click", () => handleOptionSelect(slideIdx, btn));
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        // Auswahl prüfen
+        function handleOptionSelect(selectedSlideIdx, btnElement) {
+            const state = slideStates[currentSlideIndex];
+
+            if (selectedSlideIdx === currentSlideIndex) {
+                state.solved = true;
+                feedbackToast.classList.add("opacity-0");
+                updateSlideUI();
+                speakCurrentSentence();
+            } else {
+                btnElement.classList.remove("animate-shake");
+                void btnElement.offsetWidth;
+                btnElement.classList.add("animate-shake", "border-rose-500", "bg-rose-50");
+                
+                feedbackToast.classList.remove("opacity-0");
+
+                setTimeout(() => {
+                    btnElement.classList.remove("border-rose-500", "bg-rose-50");
+                }, 650);
+            }
+        }
+
+        // Aktuelle Folie aktualisieren
+        function renderSlide() {
+            const data = SLIDES_DATA[currentSlideIndex];
+            const sceneCfg = SCENES_CONFIG[data.scene];
+            const sceneTotalActions = sceneCfg.optionOrder.length;
+
+            // Szenenwechsel (Bild 1 <-> Bild 2)
+            if (currentRenderedScene !== data.scene) {
+                currentRenderedScene = data.scene;
+                imagePlaceholderOverlay.classList.add("hidden");
+                sceneImage.src = sceneCfg.defaultSrc;
+                renderOptionButtonsForScene(data.scene);
+            }
+
+            // Szenen-Tabs oben hervorheben
+            updateHeaderTabs();
+
+            // Zähler und Nummern (Nummern 1–7 in Bild 1, 1–6 in Bild 2)
+            document.getElementById("slideCounter").textContent = data.globalId;
+            document.getElementById("badgeSceneNum").textContent = data.scene;
+            document.getElementById("badgeActionNum").textContent = data.sceneNum;
+            document.getElementById("badgeSceneTotal").textContent = sceneTotalActions;
+            document.getElementById("promptNum").textContent = data.sceneNum;
+            document.getElementById("questionNum").textContent = data.sceneNum;
+            document.getElementById("footerActionNum").textContent = data.sceneNum;
+            document.getElementById("waitingOptionCount").textContent = sceneTotalActions;
+            document.getElementById("verbRuleText").textContent = data.rule;
+
+            const progressPercent = ((currentSlideIndex + 1) / SLIDES_DATA.length) * 100;
+            document.getElementById("progressBar").style.width = `${progressPercent}%`;
+
+            // Marker neben der Person positionieren
+            hotspotMarker.textContent = data.sceneNum;
+            hotspotMarker.style.left = `${data.x}%`;
+            hotspotMarker.style.top = `${data.y}%`;
+
+            document.getElementById("prevBtn").disabled = currentSlideIndex === 0;
+            document.getElementById("nextBtn").disabled = currentSlideIndex === SLIDES_DATA.length - 1;
+
+            renderDots();
+            updateSlideUI();
+        }
+
+        function updateSlideUI() {
+            const data = SLIDES_DATA[currentSlideIndex];
+            const state = slideStates[currentSlideIndex];
+            const sceneOrder = SCENES_CONFIG[data.scene].optionOrder;
+
+            sceneOrder.forEach((idx) => {
+                const btn = document.getElementById(`option-btn-${idx}`);
+                if (!btn) return;
+                
+                btn.className = "option-card text-left p-3.5 rounded-xl border-2 transition-all duration-150 flex flex-col justify-between min-h-[72px] cursor-pointer group ";
+                
+                if (state.solved && idx === currentSlideIndex) {
+                    btn.className += "border-emerald-500 bg-emerald-50 shadow-xs ring-2 ring-emerald-200";
+                    btn.querySelector("span:first-child").className = "text-sm sm:text-[15px] font-extrabold text-emerald-900 leading-snug";
+                    btn.querySelector("span:last-child").innerHTML = '<i class="fa-solid fa-check mr-1"></i> Richtig';
+                    btn.querySelector("span:last-child").className = "text-[11px] font-bold text-emerald-600 mt-1.5";
+                } else {
+                    btn.className += "border-slate-200 bg-slate-50/60 hover:bg-white hover:border-rose-400 hover:shadow-xs";
+                    btn.querySelector("span:first-child").className = "text-sm sm:text-[15px] font-bold text-slate-800 group-hover:text-rose-700 leading-snug";
+                    btn.querySelector("span:last-child").textContent = "Infinitiv";
+                    btn.querySelector("span:last-child").className = "text-[11px] font-medium text-slate-400 mt-1.5 group-hover:text-slate-500";
+                }
+            });
+
+            if (state.solved) {
+                waitingState.classList.add("hidden");
+                solvedState.classList.remove("hidden");
+                document.getElementById("verbRuleTag").classList.remove("hidden");
+
+                // Sowohl Infinitiv als auch konjugierten Satz anzeigen
+                infinitivePhraseDisplay.innerHTML = data.infinitiveHTML;
+                conjugatedSentence.innerHTML = data.conjugatedHTML;
+                spanishTranslation.textContent = data.translation;
+
+                if (state.translationShown) {
+                    showTranslationBtn.classList.add("hidden");
+                    translationBox.classList.remove("hidden");
+                } else {
+                    showTranslationBtn.classList.remove("hidden");
+                    translationBox.classList.add("hidden");
+                }
+
+                // Auf der letzten Folie (13) Button zur Übersichtstabelle einblenden
+                const endSummaryCta = document.getElementById("endSummaryCta");
+                if (currentSlideIndex === SLIDES_DATA.length - 1) {
+                    endSummaryCta.classList.remove("hidden");
+                } else {
+                    endSummaryCta.classList.add("hidden");
+                }
+            } else {
+                waitingState.classList.remove("hidden");
+                solvedState.classList.add("hidden");
+                document.getElementById("verbRuleTag").classList.add("hidden");
+                feedbackToast.classList.add("opacity-0");
+            }
+        }
+
+        // Spanische Übersetzung anzeigen
+        function revealTranslation() {
+            slideStates[currentSlideIndex].translationShown = true;
+            showTranslationBtn.classList.add("hidden");
+            translationBox.classList.remove("hidden");
+        }
+
+        // Folie wechseln
+        function changeSlide(delta) {
+            const nextIndex = currentSlideIndex + delta;
+            if (nextIndex >= 0 && nextIndex < SLIDES_DATA.length) {
+                currentSlideIndex = nextIndex;
+                renderSlide();
+            }
+        }
+
+        function goToSlide(index) {
+            currentSlideIndex = index;
+            renderSlide();
+        }
+
+        // Gesamte Präsentation zurücksetzen
+        function resetPresentation() {
+            slideStates = SLIDES_DATA.map(() => ({
+                solved: false,
+                translationShown: false
+            }));
+            switchToSlidesView(0);
+        }
+
+        // Fortschrittspunkte (mit kleiner Trennung zwischen Bild 1 und Bild 2)
+        function renderDots() {
+            const container = document.getElementById("dotsContainer");
+            container.innerHTML = "";
+            SLIDES_DATA.forEach((slide, idx) => {
+                if (idx === 7) {
+                    const divider = document.createElement("span");
+                    divider.className = "w-px h-3 bg-slate-300 mx-0.5";
+                    container.appendChild(divider);
+                }
+
+                const dot = document.createElement("button");
+                dot.type = "button";
+                dot.title = `Bild ${slide.scene} · Nummer ${slide.sceneNum}`;
+                const isCurrent = idx === currentSlideIndex;
+                const isSolved = slideStates[idx].solved;
+
+                let classes = "h-2 rounded-full transition-all cursor-pointer ";
+                if (isCurrent) {
+                    classes += "w-5 bg-rose-600";
+                } else if (isSolved) {
+                    classes += "w-2 bg-emerald-500 hover:bg-emerald-600";
+                } else {
+                    classes += "w-2 bg-slate-300 hover:bg-slate-400";
+                }
+                dot.className = classes;
+                dot.addEventListener("click", () => goToSlide(idx));
+                container.appendChild(dot);
+            });
+        }
+
+        // Deutsche Sprachausgabe (de-DE)
+        function speakText(text) {
+            if (!("speechSynthesis" in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "de-DE";
+            utterance.rate = 0.92;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function speakCurrentSentence() {
+            speakText(SLIDES_DATA[currentSlideIndex].conjugatedPlain);
+        }
+
+        // Tastatursteuerung (Pfeil links / rechts)
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowRight") {
+                changeSlide(1);
+            } else if (e.key === "ArrowLeft") {
+                changeSlide(-1);
+            }
+        });
+
+        // Vollbildmodus umschalten
+        document.getElementById("fullscreenBtn").addEventListener("click", () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        });
+    </script>
+</body>
+</html>
